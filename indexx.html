@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrimeEdge • Login + Admin Portal</title>
+<style>
+  :root{
+    --bg1:#4f8fc0; --bg2:#2a5f7f; --card:#ffffff; --text:#0f2f4a;
+    --primary:#005f99; --primary-2:#0e7ac7; --primary-hover:#004877; --muted:#6b7a90;
+    --border:#e6edf5; --danger:#c62828; --success:#1b8f4b; --warning:#ad6b00;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    padding:20px;
+  }
+  .shell{
+    width:min(1240px,96vw); background:var(--card); border-radius:18px; overflow:hidden;
+    box-shadow:0 22px 55px rgba(0,0,0,.28); display:grid; grid-template-columns:1.05fr 1fr;
+    animation:fadeIn .6s ease;
+  }
+
+  /* Left visual panel */
+  .visual{
+    position:relative; min-height:640px;
+    background:url('https://img.freepik.com/free-vector/business-woman-working-laptop-office_3446-693.jpg') center/cover no-repeat;
+    isolation:isolate;
+    min-height: 500px;
+    animation: slideInLeft 3s ease-out;
+  }
+  .visual::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.35));
+    z-index:0;
+  }
+  .float {position:absolute; width:180px; height:180px; border-radius:50%;
+    border:3px solid rgba(255,255,255,.34); left:12%; top:10%;
+    box-shadow:0 0 40px rgba(255,255,255,.22); animation:float 6s ease-in-out infinite;}
+  .float.two{ width:260px; height:260px; left:auto; right:9%; top:auto; bottom:8%;
+              animation-delay:1.2s; border-color:rgba(255,255,255,.26)}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+
+  /* Right content panel */
+  .panel{padding:40px 34px; display:flex; flex-direction:column; justify-content:center; min-height:640px}
+  .brand{display:flex; align-items:center; gap:10px; margin-bottom:14px; color:var(--text); font-weight:800; letter-spacing:.2px}
+  .brand .dot{width:12px; height:12px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-2))}
+  h1{margin:.2rem 0 1rem; color:var(--text); font-size:28px}
+  p.lead{color:var(--muted); margin:0 0 20px; font-size:14px}
+
+  .card{
+    border:1px solid var(--border); border-radius:14px; padding:22px; background:#fff;
+    box-shadow:0 12px 20px rgba(11,50,84,.07); animation:slideInRight .45s ease;
+  }
+
+  label{font-size:13px; color:#315377; display:block; margin:10px 0 6px}
+  input, select, textarea{
+    width:100%; padding:12px 12px; border:1px solid #d7e1ec; border-radius:10px;
+    outline:none; font-size:15px; background:#fbfdff; transition:border .15s, box-shadow .15s;
+  }
+  input:focus, select:focus, textarea:focus{border-color:#a8c9ff; box-shadow:0 0 0 3px rgba(41,121,255,.12)}
+
+  .actions{display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap}
+
+  /* ====== Professional Button Styling ====== */
+  .btn{
+    position:relative;
+    padding:12px 18px;
+    border-radius:10px;
+    border:0;
+    cursor:pointer;
+    font-weight:700;
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    color:#fff;
+    overflow:hidden;
+    transition:transform .2s ease, box-shadow .25s ease;
+    box-shadow:0 6px 14px rgba(0,95,153,.25);
+  }
+  .btn:hover{
+    transform:translateY(-2px) scale(1.03);
+    box-shadow:0 10px 20px rgba(0,95,153,.35);
+  }
+  .btn:active{
+    transform:scale(.97);
+  }
+  .btn::after{
+    content:"";
+    position:absolute;
+    top:50%; left:50%;
+    width:0; height:0;
+    background:rgba(255,255,255,.35);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    transition:width .4s ease,height .4s ease,opacity .4s ease;
+    opacity:0;
+  }
+  .btn:active::after{
+    width:300px; height:300px; opacity:0;
+    transition:0s;
+  } 
+
+  /* Variants */
+  .btn.ghost{background:#eef5fb; color:var(--primary); box-shadow:none}
+  .btn.danger{background:linear-gradient(135deg,#c62828,#a31e1e)}
+  .btn.success{background:linear-gradient(135deg,#1b8f4b,#146c38)}
+  .btn.warning{background:linear-gradient(135deg,#ad6b00,#874f00)}
+
+  .right-link{margin-left:auto; font-size:14px; color:var(--primary); text-decoration:none}
+
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .full{grid-column:1 / -1}
+  .error{color:#c62828; font-size:13px; margin-top:8px; min-height:18px}
+  .ok{color:var(--success); font-size:13px; margin-top:8px; min-height:18px}
+
+  /* Dashboard */
+  .dash-top{display:flex; align-items:center; gap:10px; margin-bottom:14px}
+  .pill{font-size:12px; padding:6px 10px; background:#eef5fb; color:#1c4b6a; border-radius:999px}
+
+  .grid-tiles{
+    display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-top:12px;
+  }
+  /* ====== Upgraded Module Buttons (Tiles) ====== */
+  .tile {
+    position: relative;
+    padding: 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    box-shadow: 0 6px 16px rgba(0, 95, 153, 0.25);
+    transition: all 0.35s ease;
+    overflow: hidden;
+    min-height: 90px;
+  }
+
+  .tile small {
+    display: block;
+    font-weight: 500;
+    opacity: 0.9;
+    margin-top: 6px;
+  }
+
+  .tile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--primary-2), var(--primary));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: inherit;
+    z-index: 0;
+  }
+
+  .tile:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 14px 26px rgba(0, 95, 153, 0.35);
+  }
+
+  .tile:hover::before {
+    opacity: 1;
+  }
+
+  .tile span,
+  .tile small {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+  }
+
+  .tile:hover span {
+    transform: translateY(-3px);
+  }
+
+  .tile:active {
+    transform: scale(0.95);
+    box-shadow: 0 6px 14px rgba(0, 95, 153, 0.25);
+  }
+
+  /* Disabled state */
+  .tile.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    background: #d6dfe8;
+    box-shadow: none;
+  }
+
+  /* Tabs in admin */
+  .tabs{display:flex; gap:8px; margin-bottom:10px}
+  .tab{padding:10px 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; background:#f7fbff; color:#214d6c; font-weight:700}
+  .tab.active{background:#e8f3ff; border-color:#cfe2ff}
+
+  .table-wrap{margin-top:18px; border:1px solid var(--border); border-radius:12px; overflow:auto}
+  table{width:100%; border-collapse:collapse; font-size:14px}
+  th, td{padding:12px 14px; border-bottom:1px solid #eef2f7; white-space:nowrap}
+  th{background:#f6fafe; text-align:left; color:#315377; font-weight:700}
+  tr:hover td{background:#fbfeff}
+
+  /* Modal (viewer) */
+  .modal{
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.55); z-index:50;
+  }
+  .modal .box {
+    position: relative; /* allow proper absolute/fixed positioning */
+    width: min(1080px, 94vw);
+    height: min(720px, 88vh);
+    background: #fff;
+    border-radius: 14px;
+    padding: 0;
+    box-shadow: 0 18px 45px rgba(0,0,0,.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeIn .2s ease;
+    transition: all 0.25s ease-in-out; /* smooth maximize/restore */
+  }
+
+  .modal .bar{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--border); background:#f8fbff;
+  }
+  .modal .bar .title{font-weight:800; color:#153a56}
+  .modal iframe{border:0; width:100%; height:100%}
+
+  .hidden{display:none}
+
+  /* New features styling */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .stat-card {
+    background: linear-gradient(135deg, #f8fbff, #eef5fb);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+  }
+  
+  .stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+  
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .search-box {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  
+  .search-box input {
+    padding-left: 40px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+  }
+  
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  
+  .filter-btn {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #f8fbff;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+  }
+  
+  .filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--success);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+  }
+  
+  .notification.show {
+    transform: translateX(0);
+  }
+  
+  .notification.error {
+    background: var(--danger);
+  }
+  
+  .notification.warning {
+    background: var(--warning);
+  }
+  
+  .loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .password-strength {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 6px;
+    background: #eee;
+    overflow: hidden;
+  }
+  
+  .password-strength-bar {
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+  
+  .strength-weak { background: #c62828; width: 25%; }
+  .strength-fair { background: #ad6b00; width: 50%; }
+  .strength-good { background: #1b8f4b; width: 75%; }
+  .strength-strong { background: #1b8f4b; width: 100%; }
+
+  /* Responsive */
+  @media (max-width: 1100px){ 
+    .grid-tiles{grid-template-columns:repeat(3,1fr)} 
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px){ 
+    .shell{grid-template-columns:1fr} 
+    .visual{min-height:260px} 
+    .panel{padding:24px} 
+    .grid-tiles{grid-template-columns:repeat(2,1fr)} 
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px){ 
+    .grid-tiles{grid-template-columns:1fr} 
+  }
+
+  /* Animations */
+  @keyframes slideInRight{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideInUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+<div class="shell">
+    <!-- Left Visual -->
+    <div class="visual">
+      <span class="float"></span>
+      <span class="float two"></span>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="panel">
+      <div class="brand"><span class="dot"></span> PrimeEdge • Admin Portal</div>
+      <h1 id="panel-title">Welcome back</h1>
+      <p class="lead" id="panel-sub">Sign in to continue to your dashboard.</p>
+
+      <!-- LOGIN -->
+      <div id="login-card" class="card" role="region" aria-labelledby="panel-title">
+        <form id="loginForm" autocomplete="on">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="admin@example.com" required />
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="••••••••" required />
+          <div class="actions">
+            <button type="submit" class="btn" id="login-btn">
+              <span id="login-text">Login</span>
+              <span id="login-loading" class="loading hidden"></span>
+            </button>
+            <a class="right-link" href="#" id="fill-demo">Use demo creds</a>
+          </div>
+          <div id="login-msg" class="error"></div>
+        </form>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="dash" class="hidden" aria-live="polite">
+        <div class="card" style="animation:slideInUp .45s ease">
+          <div class="dash-top">
+            <div style="font-weight:800; color:var(--text); font-size:18px">Dashboard</div>
+            <span class="pill" id="whoami"></span>
+            <a href="#" id="adminPortalBtn" class="right-link">Open Admin Portal</a>
+            <a href="#" id="logout" class="right-link">Logout</a>
+          </div>
+          
+          <!-- Stats Overview -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="total-users">0</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="active-modules">0</div>
+              <div class="stat-label">Active Modules</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="admin-count">0</div>
+              <div class="stat-label">Admins</div>
+            </div>
+          </div>
+          
+          <div style="color:#55718b; font-size:14px">Quick Access</div>
+
+          <!-- 20 tiles -->
+          <div id="tileGrid" class="grid-tiles"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN PORTAL -->
+      <div id="admin" class="hidden">
+        <div class="card" style="animation:slideInUp .45s ease">
+          <div class="actions">
+            <div style="font-weight:700; color:var(--text)">Admin Portal</div>
+            <a href="#" id="backToDash" class="right-link">Back to Dashboard</a>
+          </div>
+
+          <div class="tabs">
+            <button id="tabUsers" class="tab active" type="button">Users & Permissions</button>
+            <button id="tabModules" class="tab" type="button">Module URLs</button>
+            <button id="tabAudit" class="tab" type="button">Audit Log</button>
+          </div>
+
+          <!-- USERS TAB -->
+          <div id="usersTab">
+            <!-- Search and Filter -->
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="userSearch" placeholder="Search users by name or email...">
+            </div>
+            
+            <div class="filter-bar">
+              <button class="filter-btn active" data-filter="all">All Users</button>
+              <button class="filter-btn" data-filter="admin">Admins</button>
+              <button class="filter-btn" data-filter="user">Regular Users</button>
+            </div>
+            
+            <form id="userForm" class="row" style="margin-top:10px">
+              <input type="hidden" id="editId"/>
+              <div class="full">
+                <label for="uemail">Email</label>
+                <input id="uemail" type="email" placeholder="user@company.com" required/>
+              </div>
+              <div>
+                <label for="uname">Name</label>
+                <input id="uname" type="text" placeholder="Full name" required/>
+              </div>
+              <div>
+                <label for="urole">Role</label>
+                <select id="urole">
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div class="full">
+                <label for="upass">Password <span style="color:#8aa1b2">(leave blank to keep current)</span></label>
+                <input id="upass" type="text" placeholder="e.g. Temp@1234"/>
+                <div class="password-strength">
+                  <div class="password-strength-bar" id="password-strength-bar"></div>
+                </div>
+              </div>
+
+              <div class="full" style="margin-top:6px">
+                <div style="font-weight:700; color:#1d4663; margin-bottom:6px">Module Permissions</div>
+                <div style="margin-bottom: 8px;">
+                  <button type="button" class="btn ghost" id="select-all-perms">Select All</button>
+                  <button type="button" class="btn ghost" id="clear-all-perms">Clear All</button>
+                </div>
+                <div id="permGrid" class="grid-tiles" style="grid-template-columns:repeat(5,1fr)"></div>
+              </div>
+
+              <div class="actions">
+                <button class="btn success" type="submit" id="saveUserBtn">Save User</button>
+                <button class="btn ghost" type="button" id="resetFormBtn">Reset</button>
+                <div id="form-msg" class="ok"></div>
+              </div>
+            </form>
+
+            <div class="table-wrap">
+              <table id="userTable" aria-label="Users table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Modules Allowed</th>
+                    <th>Last Login</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- MODULES TAB -->
+          <div id="modulesTab" class="hidden">
+            <div class="row">
+              <div class="full">
+                <p style="margin:0 0 8px; color:#375a74">
+                  Set the URL for each module (Power BI embed, your website, dashboards, etc.). Users will open them inside the page.
+                </p>
+              </div>
+            </div>
+            <form id="moduleForm" class="row">
+              <div class="full" id="moduleUrlGrid"></div>
+              <div class="actions">
+                <button type="submit" class="btn success">Save URLs</button>
+                <button type="button" class="btn ghost" id="test-all-urls">Test All URLs</button>
+                <span id="module-msg" class="ok"></span>
+              </div>
+            </form>
+          </div>
+          
+          <!-- AUDIT LOG TAB -->
+          <div id="auditTab" class="hidden">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="auditSearch" placeholder="Search audit logs...">
+            </div>
+            
+            <div class="table-wrap">
+              <table id="auditTable" aria-label="Audit logs table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            
+            <div class="actions" style="margin-top: 16px;">
+              <button class="btn ghost" id="export-audit">Export Logs</button>
+              <button class="btn danger" id="clear-audit">Clear Logs</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VIEWER MODAL (IFRAME) -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true">
+    <div class="box">
+      <div class="bar">
+        <div id="modalTitle" class="title">Module</div>
+        <a id="openNew" class="right-link" href="#" target="_blank" rel="noopener">Open in new tab</a>
+        <span class="pill" id="srcHost"></span>
+        <button id="maximizeModal" class="btn ghost" type="button">🗖</button>
+        <button id="closeModal" class="btn ghost" type="button" style="margin-left:auto">Close</button>
+      </div>
+
+      <iframe id="viewer" sandbox="allow-scripts allow-forms allow-same-origin allow-popups" referrerpolicy="no-referrer"></iframe>
+    </div>
+  </div>
+  
+  <!-- NOTIFICATION TOAST -->
+  <div id="notification" class="notification"></div>
+
+<script>
+  
+/* ===================== Constants & Storage ===================== */
+const KEY_USERS   = "pe_users_v3";
+const KEY_SESSION = "pe_session_v3";
+const KEY_MODULES = "pe_modules_v3";
+const KEY_AUDIT   = "pe_audit_v3";
+const MODULE_COUNT = 20;
+
+/* Seed demo data on first run */
+function seed(){
+  if(!localStorage.getItem(KEY_USERS)){
+    const permsAll   = Array.from({length: MODULE_COUNT}, (_,i)=> i+1);
+    const permsSome  = [1,2,3,5,8];
+    const demoUsers = [
+      {id: uuid(), name:"Admin", email:"admin@example.com", password:"admin123", role:"admin", allowed:permsAll, lastLogin: new Date().toISOString()},
+      {id: uuid(), name:"User",  email:"user@example.com",  password:"user123",  role:"user",  allowed:permsSome, lastLogin: new Date().toISOString()},
+    ];
+    saveUsers(demoUsers);
+  }
+  if(!localStorage.getItem(KEY_MODULES)){
+    const demoMods = Array.from({length: MODULE_COUNT}, (_,i)=>({
+      id: i+1,
+      title: `Module ${i+1}`,
+      url: ""
+    }));
+    saveModules(demoMods);
+  }
+  if(!localStorage.getItem(KEY_AUDIT)){
+    saveAuditLog([]);
+  }
+}
+
+function loadUsers(){ try{ return JSON.parse(localStorage.getItem(KEY_USERS)) || [] }catch{ return [] } }
+function saveUsers(list){ localStorage.setItem(KEY_USERS, JSON.stringify(list)) }
+function setSession(user){ 
+  localStorage.setItem(KEY_SESSION, JSON.stringify({
+    id:user.id, 
+    email:user.email, 
+    role:user.role, 
+    name:user.name
+  })); 
+}
+function getSession(){ try{ return JSON.parse(localStorage.getItem(KEY_SESSION)) }catch{ return null } }
+function clearSession(){ localStorage.removeItem(KEY_SESSION) }
+function loadModules(){ try{ return JSON.parse(localStorage.getItem(KEY_MODULES)) || [] }catch{ return [] } }
+function saveModules(list){ localStorage.setItem(KEY_MODULES, JSON.stringify(list)) }
+function loadAuditLog(){ try{ return JSON.parse(localStorage.getItem(KEY_AUDIT)) || [] }catch{ return [] } }
+function saveAuditLog(logs){ localStorage.setItem(KEY_AUDIT, JSON.stringify(logs)) }
+function uuid(){ return (crypto?.randomUUID?.() || "id_"+Math.random().toString(36).slice(2)) }
+
+/* ===================== Enhanced Features ===================== */
+
+// Notification System
+function showNotification(message, type = 'success', duration = 3000) {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  notification.className = `notification ${type} show`;
+  
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, duration);
+}
+
+// Audit Logging
+function logAudit(action, details = {}) {
+  const session = getSession();
+  const auditLog = loadAuditLog();
+  
+  auditLog.unshift({
+    id: uuid(),
+    timestamp: new Date().toISOString(),
+    user: session ? session.email : 'System',
+    action: action,
+    details: details
+  });
+  
+  // Keep only last 1000 logs
+  if (auditLog.length > 1000) {
+    auditLog.splice(1000);
+  }
+  
+  saveAuditLog(auditLog);
+}
+
+// Password Strength Checker
+function checkPasswordStrength(password) {
+  if (!password) return { strength: 0, label: '' };
+  
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+  if (password.match(/\d/)) strength++;
+  if (password.match(/[^a-zA-Z\d]/)) strength++;
+  
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const classes = ['', 'strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
+  
+  return {
+    strength: strength,
+    label: labels[strength],
+    class: classes[strength]
+  };
+}
+
+// URL Validation
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+// Statistics Calculation
+function calculateStats() {
+  const users = loadUsers();
+  const modules = loadModules();
+  
+  const totalUsers = users.length;
+  const adminCount = users.filter(u => u.role === 'admin').length;
+  const activeModules = modules.filter(m => m.url && isValidUrl(m.url)).length;
+  
+  return { totalUsers, adminCount, activeModules };
+}
+
+// Search and Filter Functions
+function filterUsers(users, searchTerm, filter) {
+  let filtered = users;
+  
+  // Apply search filter
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    filtered = filtered.filter(user => 
+      user.name.toLowerCase().includes(term) || 
+      user.email.toLowerCase().includes(term)
+    );
+  }
+  
+  // Apply role filter
+  if (filter !== 'all') {
+    filtered = filtered.filter(user => user.role === filter);
+  }
+  
+  return filtered;
+}
+
+/* ===================== Elements ===================== */
+const loginCard = document.getElementById("login-card");
+const dash = document.getElementById("dash");
+const adminView = document.getElementById("admin");
+
+const panelTitle = document.getElementById("panel-title");
+const panelSub = document.getElementById("panel-sub");
+const loginForm = document.getElementById("loginForm");
+const loginMsg = document.getElementById("login-msg");
+const fillDemo = document.getElementById("fill-demo");
+const logoutBtn = document.getElementById("logout");
+const adminPortalBtn = document.getElementById("adminPortalBtn");
+const backToDash = document.getElementById("backToDash");
+const whoami = document.getElementById("whoami");
+
+const tileGrid = document.getElementById("tileGrid");
+
+/* Admin - tabs */
+const tabUsers = document.getElementById("tabUsers");
+const tabModules = document.getElementById("tabModules");
+const tabAudit = document.getElementById("tabAudit");
+const usersTab = document.getElementById("usersTab");
+const modulesTab = document.getElementById("modulesTab");
+const auditTab = document.getElementById("auditTab");
+
+/* User form */
+const userForm = document.getElementById("userForm");
+const editId = document.getElementById("editId");
+const uemail = document.getElementById("uemail");
+const uname = document.getElementById("uname");
+const urole = document.getElementById("urole");
+const upass = document.getElementById("upass");
+const formMsg = document.getElementById("form-msg");
+const userTableBody = document.querySelector("#userTable tbody");
+const resetFormBtn = document.getElementById("resetFormBtn");
+const permGrid = document.getElementById("permGrid");
+const selectAllPerms = document.getElementById("select-all-perms");
+const clearAllPerms = document.getElementById("clear-all-perms");
+const userSearch = document.getElementById("userSearch");
+const filterBtns = document.querySelectorAll('.filter-btn');
+
+/* Module URLs form */
+const moduleForm = document.getElementById("moduleForm");
+const moduleUrlGrid = document.getElementById("moduleUrlGrid");
+const moduleMsg = document.getElementById("module-msg");
+const testAllUrls = document.getElementById("test-all-urls");
+
+/* Audit Log */
+const auditTableBody = document.querySelector("#auditTable tbody");
+const auditSearch = document.getElementById("auditSearch");
+const exportAudit = document.getElementById("export-audit");
+const clearAudit = document.getElementById("clear-audit");
+
+/* Modal viewer */
+const modal = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const viewer = document.getElementById("viewer");
+const closeModal = document.getElementById("closeModal");
+const openNew = document.getElementById("openNew");
+const srcHost = document.getElementById("srcHost");
+const maximizeBtn = document.getElementById("maximizeModal");
+const modalBox = modal.querySelector(".box");
+
+/* Login elements */
+const loginBtn = document.getElementById("login-btn");
+const loginText = document.getElementById("login-text");
+const loginLoading = document.getElementById("login-loading");
+
+/* Stats elements */
+const totalUsersEl = document.getElementById("total-users");
+const activeModulesEl = document.getElementById("active-modules");
+const adminCountEl = document.getElementById("admin-count");
+
+/* ===================== Boot ===================== */
+seed();
+buildModuleTiles();
+buildPermToggles();
+buildModuleUrlInputs();
+boot();
+
+function boot(){
+  const session = getSession();
+  if(session){
+    showDashboard(session);
+  } else {
+    showLogin();
+  }
+}
+
+/* ===================== Views ===================== */
+function showLogin(){
+  panelTitle.textContent = "Welcome back";
+  panelSub.textContent = "Sign in to continue to your dashboard.";
+  loginCard.classList.remove("hidden");
+  dash.classList.add("hidden");
+  adminView.classList.add("hidden");
+  loginMsg.textContent = "";
+  document.getElementById("email").focus();
+}
+
+function showDashboard(session){
+  panelTitle.textContent = `Hello, ${session.name}`;
+  panelSub.textContent = (session.role === "admin")
+    ? "You have administrator access to manage users, permissions, and module URLs."
+    : "You are logged in with limited access.";
+  whoami.textContent = `${session.email} • ${session.role.toUpperCase()}`;
+  loginCard.classList.add("hidden");
+  adminView.classList.add("hidden");
+  dash.classList.remove("hidden");
+  
+  // Update stats
+  updateStats();
+  renderTiles(session);
+}
+
+function showAdmin(){
+  loginCard.classList.add("hidden");
+  dash.classList.add("hidden");
+  adminView.classList.remove("hidden");
+  formMsg.textContent = "";
+  moduleMsg.textContent = "";
+  clearUserForm(true);
+  renderUsers();
+  renderAuditLog();
+}
+
+function updateStats() {
+  const stats = calculateStats();
+  totalUsersEl.textContent = stats.totalUsers;
+  activeModulesEl.textContent = stats.activeModules;
+  adminCountEl.textContent = stats.adminCount;
+}
+
+/* ===================== Auth ===================== */
+loginForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  
+  // Show loading state
+  loginText.classList.add("hidden");
+  loginLoading.classList.remove("hidden");
+  loginBtn.disabled = true;
+  
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const pass  = document.getElementById("password").value;
+  const users = loadUsers();
+  const found = users.find(u => u.email.toLowerCase() === email && u.password === pass);
+  
+  if(!found){ 
+    loginMsg.textContent = "Invalid email or password."; 
+    // Reset loading state
+    loginText.classList.remove("hidden");
+    loginLoading.classList.add("hidden");
+    loginBtn.disabled = false;
+    return; 
+  }
+
+  // Update last login
+  found.lastLogin = new Date().toISOString();
+  saveUsers(users);
+  
+  setSession(found);
+  logAudit('User login', { email: found.email });
+  showDashboard(getSession());
+  
+  // Reset loading state
+  loginText.classList.remove("hidden");
+  loginLoading.classList.add("hidden");
+  loginBtn.disabled = false;
+});
+
+fillDemo.addEventListener("click",(e)=>{
+  e.preventDefault();
+  document.getElementById("email").value = "admin@example.com";
+  document.getElementById("password").value = "admin123";
+});
+
+logoutBtn.addEventListener("click",(e)=>{
+  e.preventDefault(); 
+  const session = getSession();
+  if (session) {
+    logAudit('User logout', { email: session.email });
+  }
+  clearSession(); 
+  showLogin(); 
+});
+
+adminPortalBtn.addEventListener("click",(e)=>{
+  e.preventDefault();
+  const session = getSession();
+  if(!session || session.role !== "admin"){ 
+    showNotification("Admin access only.", "error");
+    return; 
+  }
+  showAdmin();
+});
+backToDash.addEventListener("click",(e)=>{ e.preventDefault(); showDashboard(getSession()); });
+
+/* ===================== Admin Tabs ===================== */
+tabUsers.addEventListener("click", ()=>{
+  tabUsers.classList.add("active"); 
+  tabModules.classList.remove("active");
+  tabAudit.classList.remove("active");
+  usersTab.classList.remove("hidden"); 
+  modulesTab.classList.add("hidden");
+  auditTab.classList.add("hidden");
+});
+
+tabModules.addEventListener("click", ()=>{
+  tabModules.classList.add("active"); 
+  tabUsers.classList.remove("active");
+  tabAudit.classList.remove("active");
+  modulesTab.classList.remove("hidden"); 
+  usersTab.classList.add("hidden");
+  auditTab.classList.add("hidden");
+});
+
+tabAudit.addEventListener("click", ()=>{
+  tabAudit.classList.add("active"); 
+  tabUsers.classList.remove("active");
+  tabModules.classList.remove("active");
+  auditTab.classList.remove("hidden"); 
+  usersTab.classList.add("hidden");
+  modulesTab.classList.add("hidden");
+  renderAuditLog();
+});
+
+/* ===================== Tiles & Modules ===================== */
+function buildModuleTiles(){
+  tileGrid.innerHTML = "";
+  const mods = loadModules();
+  for(let i=1;i<=MODULE_COUNT;i++){
+    const div = document.createElement("div");
+    div.className = "tile";
+    div.dataset.mod = i;
+    const label = mods.find(m=>m.id===i)?.title || `Module ${i}`;
+    div.innerHTML = `${label}<small>#${i}</small>`;
+    div.addEventListener("click", () => openModule(i));
+    tileGrid.appendChild(div);
+  }
+}
+
+function renderTiles(session){
+  const users = loadUsers();
+  const me = users.find(u => u.id === session.id);
+  const allowed = new Set(me?.allowed || []);
+  document.querySelectorAll(".tile").forEach(t=>{
+    const id = Number(t.dataset.mod);
+    if(session.role === "admin" || allowed.has(id)){
+      t.classList.remove("disabled");
+    }else{
+      t.classList.add("disabled");
+    }
+  });
+}
+
+function openModule(n){
+  const session = getSession();
+  const users = loadUsers();
+  const me = users.find(u => u.id === session.id);
+  const allowed = new Set(me?.allowed || []);
+  if(session.role !== "admin" && !allowed.has(n)) {
+    showNotification("You don't have permission to access this module", "error");
+    return;
+  }
+
+  const mod = loadModules().find(m=>m.id===n);
+  const url = mod?.url?.trim();
+  const title = (mod?.title || `Module ${n}`);
+  modalTitle.textContent = `${title} (Module ${n})`;
+
+  if(!url){
+    viewer.srcdoc = `<style>body{font-family:system-ui,Segoe UI,Roboto;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#244a63}</style><div><h2>No URL configured</h2><p>Ask an Admin to set a URL for ${title} in the Admin Portal → Module URLs.</p></div>`;
+    openNew.style.pointerEvents = "none"; openNew.style.opacity = 0.5; openNew.href = "#";
+    srcHost.textContent = "";
+  }else{
+    viewer.removeAttribute("srcdoc");
+    viewer.src = url;
+    openNew.href = url; openNew.style.pointerEvents="auto"; openNew.style.opacity=1;
+    try { srcHost.textContent = (new URL(url)).host; } catch { srcHost.textContent = ""; }
+  }
+
+  modal.style.display = "flex";
+  logAudit('Module opened', { moduleId: n, moduleTitle: title });
+}
+
+/* Modal functionality */
+let isMaximized = false;
+let prevBox = {};
+
+maximizeBtn.addEventListener("click", () => {
+  if(!isMaximized){
+    const rect = modalBox.getBoundingClientRect();
+    prevBox = {
+      width: rect.width + "px",
+      height: rect.height + "px",
+      top: modalBox.style.top || rect.top + "px",
+      left: modalBox.style.left || rect.left + "px",
+      borderRadius: modalBox.style.borderRadius
+    };
+    modalBox.style.position = "fixed";
+    modalBox.style.top = "0";
+    modalBox.style.left = "0";
+    modalBox.style.width = "100vw";
+    modalBox.style.height = "100vh";
+    modalBox.style.borderRadius = "0";
+    isMaximized = true;
+    maximizeBtn.textContent = "🗗";
+  } else {
+    modalBox.style.position = "relative";
+    modalBox.style.top = prevBox.top;
+    modalBox.style.left = prevBox.left;
+    modalBox.style.width = prevBox.width;
+    modalBox.style.height = prevBox.height;
+    modalBox.style.borderRadius = prevBox.borderRadius || "14px";
+    isMaximized = false;
+    maximizeBtn.textContent = "🗖";
+  }
+});
+
+closeModal.addEventListener("click", () => {
+  modal.style.display = "none";
+  if(isMaximized) {
+    maximizeBtn.click();
+  }
+});
+
+modal.addEventListener("click", (e) => {
+  if(e.target === modal){
+    modal.style.display = "none";
+    if(isMaximized) maximizeBtn.click();
+  }
+});
+
+/* ===================== Admin: Users & Permissions ===================== */
+function buildPermToggles(){
+  permGrid.innerHTML = "";
+  const mods = loadModules();
+  for(let i=1;i<=MODULE_COUNT;i++){
+    const label = mods.find(m=>m.id===i)?.title || `Module ${i}`;
+    const cell = document.createElement("label");
+    cell.className = "tile";
+    cell.style.justifyContent = "flex-start";
+    cell.style.gap = "10px";
+    cell.innerHTML = `<input type="checkbox" data-mod="${i}"> <span>${label}</span> <small>#${i}</small>`;
+    permGrid.appendChild(cell);
+  }
+}
+
+function getPermSelections(){
+  const boxes = permGrid.querySelectorAll("input[type='checkbox']");
+  const arr = [];
+  boxes.forEach(b => { if(b.checked) arr.push(Number(b.dataset.mod)); });
+  return arr;
+}
+
+function setPermSelections(list){
+  const set = new Set(list || []);
+  permGrid.querySelectorAll("input[type='checkbox']").forEach(b=>{
+    b.checked = set.has(Number(b.dataset.mod));
+  });
+}
+
+// Select All / Clear All permissions
+selectAllPerms.addEventListener("click", () => {
+  permGrid.querySelectorAll("input[type='checkbox']").forEach(b => {
+    b.checked = true;
+  });
+});
+
+clearAllPerms.addEventListener("click", () => {
+  permGrid.querySelectorAll("input[type='checkbox']").forEach(b => {
+    b.checked = false;
+  });
+});
+
+// Password strength indicator
+upass.addEventListener("input", () => {
+  const strength = checkPasswordStrength(upass.value);
+  const bar = document.getElementById("password-strength-bar");
+  bar.className = `password-strength-bar ${strength.class}`;
+});
+
+// User search and filter
+let currentFilter = 'all';
+userSearch.addEventListener("input", renderUsers);
+filterBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderUsers();
+  });
+});
+
+function renderUsers(){
+  const users = loadUsers();
+  const searchTerm = userSearch.value;
+  const filteredUsers = filterUsers(users, searchTerm, currentFilter);
+  
+  userTableBody.innerHTML = "";
+  filteredUsers.forEach((u, i)=>{
+    const tr = document.createElement("tr");
+    const lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never';
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${escapeHtml(u.name)}</td>
+      <td>${escapeHtml(u.email)}</td>
+      <td>${u.role}</td>
+      <td>${(u.allowed||[]).length}</td>
+      <td>${lastLogin}</td>
+      <td style="text-align:right; display:flex; gap:8px; justify-content:flex-end">
+        <button class="btn ghost" data-act="edit" data-id="${u.id}">Edit</button>
+        <button class="btn warning" data-act="pass" data-id="${u.id}">Set Password</button>
+        <button class="btn danger" data-act="del" data-id="${u.id}">Delete</button>
+      </td>
+    `;
+    userTableBody.appendChild(tr);
+  });
+}
+
+/* Create / Update user */
+userForm.addEventListener("submit",(e)=>{
+  e.preventDefault();
+  const id = editId.value || uuid();
+  const users = loadUsers();
+  const idx = users.findIndex(x=>x.id===id);
+
+  const record = {
+    id,
+    email: uemail.value.trim().toLowerCase(),
+    name:  uname.value.trim(),
+    role:  urole.value,
+    allowed: getPermSelections(),
+    password: (idx>=0 ? users[idx].password : ""),
+    lastLogin: idx>=0 ? users[idx].lastLogin : null
+  };
+
+  // Check for duplicate email
+  const emailExists = users.some(u => u.email.toLowerCase() === record.email && u.id !== id);
+  if(emailExists){
+    showNotification("A user with this email already exists.", "error");
+    return;
+  }
+
+  // Protect: never allow system with zero admins
+  const isChangingRoleFromAdmin = (idx>=0 && users[idx].role==="admin" && record.role!=="admin");
+  if(isChangingRoleFromAdmin){
+    const adminCount = users.filter(u=>u.role==="admin").length;
+    if(adminCount<=1){
+      showNotification("You cannot remove the last Admin.", "error");
+      return;
+    }
+  }
+
+  // Update password if provided
+  const newPass = upass.value.trim();
+  if(newPass) record.password = newPass;
+  if(!record.password){ record.password = genTempPass(); }
+
+  const action = idx>=0 ? 'updated' : 'created';
+  
+  if(idx>=0){
+    users[idx] = record;
+    formMsg.textContent = "User updated.";
+    showNotification("User updated successfully");
+    logAudit('User updated', { email: record.email, role: record.role });
+  }else{
+    users.push(record);
+    formMsg.textContent = `User created. Temp password: ${record.password}`;
+    showNotification("User created successfully");
+    logAudit('User created', { email: record.email, role: record.role });
+  }
+  saveUsers(users);
+  renderUsers();
+  clearUserForm(false);
+  updateStats();
+
+  // if editing yourself, refresh tiles immediately
+  const session = getSession();
+  if(session && session.id === id) renderTiles(session);
+});
+
+/* Edit/Delete/Password handlers */
+userTableBody.addEventListener("click",(e)=>{
+  const btn = e.target.closest("button"); if(!btn) return;
+  const id = btn.dataset.id; const act = btn.dataset.act;
+  const users = loadUsers();
+  const u = users.find(x=>x.id===id); if(!u) return;
+
+  if(act==="edit"){
+    editId.value = u.id;
+    uemail.value = u.email;
+    uname.value = u.name;
+    urole.value = u.role;
+    upass.value = "";
+    setPermSelections(u.allowed);
+    formMsg.textContent = "Editing user…";
+    window.scrollTo({top:document.body.scrollHeight, behavior:"smooth"});
+  }
+  if(act==="pass"){
+    const p = prompt(`Set new password for ${u.email}:`, "");
+    if(p && p.trim()){
+      u.password = p.trim(); 
+      saveUsers(users); 
+      renderUsers(); 
+      showNotification("Password updated successfully");
+      logAudit('Password changed', { email: u.email });
+    }
+  }
+  if(act==="del"){
+    // prevent deleting last admin
+    if(u.role==="admin" && users.filter(x=>x.role==="admin").length<=1){
+      showNotification("You cannot delete the last Admin.", "error");
+      return;
+    }
+    if(!confirm("Delete this user?")) return;
+    const filtered = users.filter(x=>x.id!==id);
+    saveUsers(filtered); 
+    renderUsers();
+    updateStats();
+    showNotification("User deleted successfully");
+    logAudit('User deleted', { email: u.email });
+    
+    // if you deleted yourself -> logout
+    const session = getSession();
+    if(session && session.id===id){ 
+      clearSession(); 
+      showLogin(); 
+    }
+  }
+});
+
+resetFormBtn.addEventListener("click", ()=> clearUserForm(true));
+
+function clearUserForm(clearMessage){
+  editId.value = ""; uemail.value = ""; uname.value = ""; urole.value = "user"; upass.value = "";
+  setPermSelections([]); 
+  document.getElementById("password-strength-bar").className = "password-strength-bar";
+  if(clearMessage) formMsg.textContent = "";
+}
+
+/* ===================== Admin: Module URLs ===================== */
+function buildModuleUrlInputs(){
+  const mods = loadModules();
+  const wrap = document.createElement("div");
+  wrap.style.display = "grid";
+  wrap.style.gridTemplateColumns = "1fr 1fr";
+  wrap.style.gap = "12px";
+  for(let i=1;i<=MODULE_COUNT;i++){
+    const m = mods.find(x=>x.id===i) || {id:i, title:`Module ${i}`, url:""};
+    const box = document.createElement("div");
+    box.className = "card";
+    box.style.padding = "12px";
+    box.innerHTML = `
+      <div style="font-weight:700; color:#1d4663; margin-bottom:8px">${escapeHtml(m.title)} <span style="color:#6a8197">#${i}</span></div>
+      <label>Title</label>
+      <input type="text" data-field="title" data-mod="${i}" value="${escapeHtml(m.title)}" placeholder="e.g. Sales Dashboard" />
+      <label style="margin-top:8px">URL (Power BI / Website)</label>
+      <input type="url" data-field="url" data-mod="${i}" value="${escapeHtml(m.url||"")}" placeholder="https://..."/>
+      <div style="margin-top:4px; font-size:12px; color:${isValidUrl(m.url) ? 'var(--success)' : 'var(--muted)'}">
+        ${m.url ? (isValidUrl(m.url) ? '✓ Valid URL' : '✗ Invalid URL') : 'No URL set'}
+      </div>
+    `;
+    wrap.appendChild(box);
+  }
+  moduleUrlGrid.innerHTML = "";
+  moduleUrlGrid.appendChild(wrap);
+}
+
+moduleForm.addEventListener("submit",(e)=>{
+  e.preventDefault();
+  const inputs = moduleUrlGrid.querySelectorAll("input");
+  const modsMap = new Map();
+  for(const el of inputs){
+    const id = Number(el.dataset.mod);
+    const field = el.dataset.field;
+    if(!modsMap.has(id)) modsMap.set(id, {id, title:`Module ${id}`, url:""});
+    modsMap.get(id)[field] = el.value.trim();
+  }
+  const list = Array.from(modsMap.values());
+  saveModules(list);
+  buildModuleTiles();
+  buildPermToggles();
+  buildModuleUrlInputs();
+  updateStats();
+  moduleMsg.textContent = "Module URLs saved.";
+  showNotification("Module URLs saved successfully");
+  logAudit('Module URLs updated');
+  setTimeout(()=> moduleMsg.textContent="", 2200);
+});
+
+// Test all URLs
+testAllUrls.addEventListener("click", async () => {
+  const modules = loadModules();
+  let validCount = 0;
+  let testedCount = 0;
+  
+  for (const mod of modules) {
+    if (mod.url) {
+      testedCount++;
+      try {
+        const response = await fetch(mod.url, { method: 'HEAD', mode: 'no-cors' });
+        validCount++;
+      } catch (e) {
+        // URL is invalid or blocked by CORS
+      }
+    }
+  }
+  
+  showNotification(`Tested ${testedCount} URLs, ${validCount} are accessible`, 
+    validCount === testedCount ? 'success' : 'warning');
+});
+
+/* ===================== Audit Log ===================== */
+function renderAuditLog() {
+  const auditLog = loadAuditLog();
+  const searchTerm = auditSearch.value.toLowerCase();
+  
+  auditTableBody.innerHTML = "";
+  
+  const filteredLogs = auditLog.filter(log => 
+    log.user.toLowerCase().includes(searchTerm) ||
+    log.action.toLowerCase().includes(searchTerm) ||
+    JSON.stringify(log.details).toLowerCase().includes(searchTerm)
+  );
+  
+  filteredLogs.forEach(log => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${new Date(log.timestamp).toLocaleString()}</td>
+      <td>${escapeHtml(log.user)}</td>
+      <td>${escapeHtml(log.action)}</td>
+      <td>${escapeHtml(JSON.stringify(log.details))}</td>
+    `;
+    auditTableBody.appendChild(tr);
+  });
+}
+
+auditSearch.addEventListener("input", renderAuditLog);
+
+exportAudit.addEventListener("click", () => {
+  const auditLog = loadAuditLog();
+  const csv = auditLog.map(log => 
+    `"${log.timestamp}","${log.user}","${log.action}","${JSON.stringify(log.details).replace(/"/g, '""')}"`
+  ).join('\n');
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `audit-log-${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  showNotification("Audit log exported successfully");
+  logAudit('Audit log exported');
+});
+
+clearAudit.addEventListener("click", () => {
+  if (confirm("Are you sure you want to clear all audit logs? This action cannot be undone.")) {
+    saveAuditLog([]);
+    renderAuditLog();
+    showNotification("Audit logs cleared");
+    logAudit('Audit logs cleared');
+  }
+});
+
+/* ===================== Utils ===================== */
+function genTempPass(){ 
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let result = '';
+  for (let i = 0; i < 10; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+function escapeHtml(str=""){ 
+  return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); 
+}
+</script>
+</body>
+</html>
