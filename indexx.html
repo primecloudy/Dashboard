@@ -601,54 +601,149 @@
 
 <script>
   
-/* ===================== Constants & Storage ===================== */
-const KEY_USERS   = "pe_users_v3";
-const KEY_SESSION = "pe_session_v3";
-const KEY_MODULES = "pe_modules_v3";
-const KEY_AUDIT   = "pe_audit_v3";
+/* ===================== Constants & Data ===================== */
 const MODULE_COUNT = 20;
 
-/* Seed demo data on first run */
-function seed(){
-  if(!localStorage.getItem(KEY_USERS)){
-    const permsAll   = Array.from({length: MODULE_COUNT}, (_,i)=> i+1);
-    const permsSome  = [1,2,3,5,8];
-    const demoUsers = [
-      {id: uuid(), name:"Admin", email:"admin@example.com", password:"admin123", role:"admin", allowed:permsAll, lastLogin: new Date().toISOString()},
-      {id: uuid(), name:"User",  email:"user@example.com",  password:"user123",  role:"user",  allowed:permsSome, lastLogin: new Date().toISOString()},
-    ];
-    saveUsers(demoUsers);
+// Embedded module data with Power BI URLs
+const MODULES_DATA = [
+  {
+    id: 1,
+    title: "OPEN COMPLAINTS",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYmNiNjc5NjEtYjBjZi00ZDIyLWI5YjgtOWE4ODRhMDcyYmZjIiwidCI6IjAzZjRiMjg0LWI4ZjQtNDE2MS05MDA3LWQyN2NjNTU0YTVjZSJ9&pageName=d171df9c9ae1db7cc020"
+  },
+  {
+    id: 2,
+    title: "OGL",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiNzM4N2Q4ODEtZGE3Mi00YTUyLWFlMTAtMDMyMTdiODMxZmVlIiwidCI6IjAzZjRiMjg0LWI4ZjQtNDE2MS05MDA3LWQyN2NjNTU0YTVjZSJ9&pageName=2f65a452209dddc40441"
+  },
+  {
+    id: 3,
+    title: "ASHOK LEYLAND",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiMDljZDcwNTQtOWVkYy00YmIxLTkzYTMtYjNlZThkMDk2NjhjIiwidCI6IjAzZjRiMjg0LWI4ZjQtNDE2MS05MDA3LWQyN2NjNTU0YTVjZSJ9&pageName=2f65a452209dddc40441"
+  },
+  {
+    id: 4,
+    title: "AMNEX",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiOGNmODgyODUtYmY2OS00OWE5LWIxOTctOWMyYmFmM2QyMzEyIiwidCI6IjAzZjRiMjg0LWI4ZjQtNDE2MS05MDA3LWQyN2NjNTU0YTVjZSJ9&pageName=2f65a452209dddc40441"
+  },
+  {
+    id: 5,
+    title: "SWITCH",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiNDM2YTllOTEtMGM0OC00ZmU2LTlkOGYtYTk2OTZhYjE3Mzk2IiwidCI6IjAzZjRiMjg0LWI4ZjQtNDE2IS05MDA3LWQyN2NjNTU0YTVjZSJ9&pageName=2f65a452209dddc40441"
+  },
+  {
+    id: 6,
+    title: "SERVICE DATA",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiZjcyYzhmZjQtYmRmNi00ZjkzLWE5MDktMTVlNjJmMzMxNjEwIiwidCI6IjAzZjRiMjg0LWI4ZjQtNDE2MS05MDA3LWQyN2NjNTU0YTVjZSJ9"
+  },
+  {
+    id: 7,
+    title: "Power BI Dashboard",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYzQ5Y2Y0YzktMWY1Yi00Y2U1LWE3OGItYzU3YzI0M2Y1Y2Q0IiwidCI6IjEwMjQ5ZTY2LWE4MmUtNGY0My04YzYyLWE5MjU5ZDM1MzBkNyIsImMiOjEwfQ%3D%3D"
+  },
+  {
+    id: 8,
+    title: "Power BI Operations",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYzQ5Y2Y0YzktMWY1Yi00Y2U1LWE3OGItYzU3YzI0M2Y1Y2Q0IiwidCI6IjEwMjQ5ZTY2LWE4MmUtNGY0My04YzYyLWE5MjU5ZDM1MzBkNyIsImMiOjEwfQ%3D%3D"
+  },
+  {
+    id: 9,
+    title: "Power BI Analytics",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYzQ5Y2Y0YzktMWY1Yi00Y2U1LWE3OGItYzU3YzI0M2Y1Y2Q0IiwidCI6IjEwMjQ5ZTY2LWE4MmUtNGY0My04YzYyLWE5MjU5ZDM1MzBkNyIsImMiOjEwfQ%3D%3D"
+  },
+  {
+    id: 10,
+    title: "Power BI Reports",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYzQ5Y2Y0YzktMWY1Yi00Y2U1LWE3OGItYzU3YzI0M2Y1Y2Q0IiwidCI6IjEwMjQ5ZTY2LWE4MmUtNGY0My04YzYyLWE5MjU5ZDM1MzBkNyIsImMiOjEwfQ%3D%3D"
+  },
+  {
+    id: 11,
+    title: "Power BI Insights",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYzQ5Y2Y0YzktMWY1Yi00Y2U1LWE3OGItYzU3YzI0M2Y1Y2Q0IiwidCI6IjEwMjQ5ZTY2LWE4MmUtNGY0My04YzYyLWE5MjU5ZDM1MzBkNyIsImMiOjEwfQ%3D%3D"
+  },
+  {
+    id: 12,
+    title: "Power BI Metrics",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYzQ5Y2Y0YzktMWY1Yi00Y2U1LWE3OGItYzU3YzI0M2Y1Y2Q0IiwidCI6IjEwMjQ5ZTY2LWE4MmUtNGY0My04YzYyLWE5MjU5ZDM1MzBkNyIsImMiOjEwfQ%3D%3D"
+  },
+  {
+    id: 13,
+    title: "Power BI Analytics",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYzQ5Y2Y0YzktMWY1Yi00Y2U1LWE3OGItYzU3YzI0M2Y1Y2Q0IiwidCI6IjEwMjQ5ZTY2LWE4MmUtNGY0My04YzYyLWE5MjU5ZDM1MzBkNyIsImMiOjEwfQ%3D%3D"
+  },
+  {
+    id: 14,
+    title: "Power BI Dashboard",
+    url: "https://app.powerbi.com/view?r=eyJrIjoiYzQ5Y2Y0YzktMWY1Yi00Y2U1LWE3OGItYzU3YzI0M2Y1Y2Q0IiwidCI6IjEwMjQ5ZTY2LWE4MmUtNGY0My04YzYyLWE5MjU5ZDM1MzBkNyIsImMiOjEwfQ%3D%3D"
+  },
+  {
+    id: 15,
+    title: "Module 15",
+    url: ""
+  },
+  {
+    id: 16,
+    title: "Module 16",
+    url: ""
+  },
+  {
+    id: 17,
+    title: "Module 17",
+    url: ""
+  },
+  {
+    id: 18,
+    title: "Module 18",
+    url: ""
+  },
+  {
+    id: 19,
+    title: "Module 19",
+    url: ""
+  },
+  {
+    id: 20,
+    title: "Module 20",
+    url: ""
   }
-  if(!localStorage.getItem(KEY_MODULES)){
-    const demoMods = Array.from({length: MODULE_COUNT}, (_,i)=>({
-      id: i+1,
-      title: `Module ${i+1}`,
-      url: ""
-    }));
-    saveModules(demoMods);
-  }
-  if(!localStorage.getItem(KEY_AUDIT)){
-    saveAuditLog([]);
-  }
-}
+];
 
-function loadUsers(){ try{ return JSON.parse(localStorage.getItem(KEY_USERS)) || [] }catch{ return [] } }
-function saveUsers(list){ localStorage.setItem(KEY_USERS, JSON.stringify(list)) }
-function setSession(user){ 
-  localStorage.setItem(KEY_SESSION, JSON.stringify({
-    id:user.id, 
-    email:user.email, 
-    role:user.role, 
-    name:user.name
-  })); 
-}
-function getSession(){ try{ return JSON.parse(localStorage.getItem(KEY_SESSION)) }catch{ return null } }
-function clearSession(){ localStorage.removeItem(KEY_SESSION) }
-function loadModules(){ try{ return JSON.parse(localStorage.getItem(KEY_MODULES)) || [] }catch{ return [] } }
-function saveModules(list){ localStorage.setItem(KEY_MODULES, JSON.stringify(list)) }
-function loadAuditLog(){ try{ return JSON.parse(localStorage.getItem(KEY_AUDIT)) || [] }catch{ return [] } }
-function saveAuditLog(logs){ localStorage.setItem(KEY_AUDIT, JSON.stringify(logs)) }
-function uuid(){ return (crypto?.randomUUID?.() || "id_"+Math.random().toString(36).slice(2)) }
+// Demo users data
+const DEMO_USERS = [
+  {
+    id: "admin-1",
+    name: "Admin",
+    email: "admin@example.com",
+    password: "admin123",
+    role: "admin",
+    allowed: Array.from({length: MODULE_COUNT}, (_,i)=> i+1),
+    lastLogin: new Date().toISOString()
+  },
+  {
+    id: "user-1",
+    name: "User",
+    email: "user@example.com",
+    password: "user123",
+    role: "user",
+    allowed: [1,2,3,5,8],
+    lastLogin: new Date().toISOString()
+  },
+  {
+    id: "powerbi-1",
+    name: "Power BI User",
+    email: "powerbi@example.com",
+    password: "powerbi123",
+    role: "user",
+    allowed: [1,2,3,4,5],
+    lastLogin: new Date().toISOString()
+  }
+];
+
+// Current session data
+let currentSession = null;
+let currentUsers = [...DEMO_USERS];
+let currentModules = [...MODULES_DATA];
+let auditLog = [];
 
 /* ===================== Enhanced Features ===================== */
 
@@ -665,13 +760,10 @@ function showNotification(message, type = 'success', duration = 3000) {
 
 // Audit Logging
 function logAudit(action, details = {}) {
-  const session = getSession();
-  const auditLog = loadAuditLog();
-  
   auditLog.unshift({
     id: uuid(),
     timestamp: new Date().toISOString(),
-    user: session ? session.email : 'System',
+    user: currentSession ? currentSession.email : 'System',
     action: action,
     details: details
   });
@@ -680,8 +772,6 @@ function logAudit(action, details = {}) {
   if (auditLog.length > 1000) {
     auditLog.splice(1000);
   }
-  
-  saveAuditLog(auditLog);
 }
 
 // Password Strength Checker
@@ -716,12 +806,9 @@ function isValidUrl(string) {
 
 // Statistics Calculation
 function calculateStats() {
-  const users = loadUsers();
-  const modules = loadModules();
-  
-  const totalUsers = users.length;
-  const adminCount = users.filter(u => u.role === 'admin').length;
-  const activeModules = modules.filter(m => m.url && isValidUrl(m.url)).length;
+  const totalUsers = currentUsers.length;
+  const adminCount = currentUsers.filter(u => u.role === 'admin').length;
+  const activeModules = currentModules.filter(m => m.url && isValidUrl(m.url)).length;
   
   return { totalUsers, adminCount, activeModules };
 }
@@ -821,16 +908,14 @@ const activeModulesEl = document.getElementById("active-modules");
 const adminCountEl = document.getElementById("admin-count");
 
 /* ===================== Boot ===================== */
-seed();
 buildModuleTiles();
 buildPermToggles();
 buildModuleUrlInputs();
 boot();
 
 function boot(){
-  const session = getSession();
-  if(session){
-    showDashboard(session);
+  if(currentSession){
+    showDashboard(currentSession);
   } else {
     showLogin();
   }
@@ -894,8 +979,7 @@ loginForm.addEventListener("submit", async (e)=>{
   
   const email = document.getElementById("email").value.trim().toLowerCase();
   const pass  = document.getElementById("password").value;
-  const users = loadUsers();
-  const found = users.find(u => u.email.toLowerCase() === email && u.password === pass);
+  const found = currentUsers.find(u => u.email.toLowerCase() === email && u.password === pass);
   
   if(!found){ 
     loginMsg.textContent = "Invalid email or password."; 
@@ -908,11 +992,16 @@ loginForm.addEventListener("submit", async (e)=>{
 
   // Update last login
   found.lastLogin = new Date().toISOString();
-  saveUsers(users);
   
-  setSession(found);
+  currentSession = {
+    id: found.id, 
+    email: found.email, 
+    role: found.role, 
+    name: found.name
+  };
+  
   logAudit('User login', { email: found.email });
-  showDashboard(getSession());
+  showDashboard(currentSession);
   
   // Reset loading state
   loginText.classList.remove("hidden");
@@ -928,24 +1017,22 @@ fillDemo.addEventListener("click",(e)=>{
 
 logoutBtn.addEventListener("click",(e)=>{
   e.preventDefault(); 
-  const session = getSession();
-  if (session) {
-    logAudit('User logout', { email: session.email });
+  if (currentSession) {
+    logAudit('User logout', { email: currentSession.email });
   }
-  clearSession(); 
+  currentSession = null; 
   showLogin(); 
 });
 
 adminPortalBtn.addEventListener("click",(e)=>{
   e.preventDefault();
-  const session = getSession();
-  if(!session || session.role !== "admin"){ 
+  if(!currentSession || currentSession.role !== "admin"){ 
     showNotification("Admin access only.", "error");
     return; 
   }
   showAdmin();
 });
-backToDash.addEventListener("click",(e)=>{ e.preventDefault(); showDashboard(getSession()); });
+backToDash.addEventListener("click",(e)=>{ e.preventDefault(); showDashboard(currentSession); });
 
 /* ===================== Admin Tabs ===================== */
 tabUsers.addEventListener("click", ()=>{
@@ -979,12 +1066,12 @@ tabAudit.addEventListener("click", ()=>{
 /* ===================== Tiles & Modules ===================== */
 function buildModuleTiles(){
   tileGrid.innerHTML = "";
-  const mods = loadModules();
   for(let i=1;i<=MODULE_COUNT;i++){
     const div = document.createElement("div");
     div.className = "tile";
     div.dataset.mod = i;
-    const label = mods.find(m=>m.id===i)?.title || `Module ${i}`;
+    const mod = currentModules.find(m=>m.id===i);
+    const label = mod?.title || `Module ${i}`;
     div.innerHTML = `${label}<small>#${i}</small>`;
     div.addEventListener("click", () => openModule(i));
     tileGrid.appendChild(div);
@@ -992,8 +1079,7 @@ function buildModuleTiles(){
 }
 
 function renderTiles(session){
-  const users = loadUsers();
-  const me = users.find(u => u.id === session.id);
+  const me = currentUsers.find(u => u.id === session.id);
   const allowed = new Set(me?.allowed || []);
   document.querySelectorAll(".tile").forEach(t=>{
     const id = Number(t.dataset.mod);
@@ -1006,16 +1092,16 @@ function renderTiles(session){
 }
 
 function openModule(n){
-  const session = getSession();
-  const users = loadUsers();
-  const me = users.find(u => u.id === session.id);
+  if(!currentSession) return;
+  
+  const me = currentUsers.find(u => u.id === currentSession.id);
   const allowed = new Set(me?.allowed || []);
-  if(session.role !== "admin" && !allowed.has(n)) {
+  if(currentSession.role !== "admin" && !allowed.has(n)) {
     showNotification("You don't have permission to access this module", "error");
     return;
   }
 
-  const mod = loadModules().find(m=>m.id===n);
+  const mod = currentModules.find(m=>m.id===n);
   const url = mod?.url?.trim();
   const title = (mod?.title || `Module ${n}`);
   modalTitle.textContent = `${title} (Module ${n})`;
@@ -1086,9 +1172,9 @@ modal.addEventListener("click", (e) => {
 /* ===================== Admin: Users & Permissions ===================== */
 function buildPermToggles(){
   permGrid.innerHTML = "";
-  const mods = loadModules();
   for(let i=1;i<=MODULE_COUNT;i++){
-    const label = mods.find(m=>m.id===i)?.title || `Module ${i}`;
+    const mod = currentModules.find(m=>m.id===i);
+    const label = mod?.title || `Module ${i}`;
     const cell = document.createElement("label");
     cell.className = "tile";
     cell.style.justifyContent = "flex-start";
@@ -1145,9 +1231,8 @@ filterBtns.forEach(btn => {
 });
 
 function renderUsers(){
-  const users = loadUsers();
   const searchTerm = userSearch.value;
-  const filteredUsers = filterUsers(users, searchTerm, currentFilter);
+  const filteredUsers = filterUsers(currentUsers, searchTerm, currentFilter);
   
   userTableBody.innerHTML = "";
   filteredUsers.forEach((u, i)=>{
@@ -1174,8 +1259,7 @@ function renderUsers(){
 userForm.addEventListener("submit",(e)=>{
   e.preventDefault();
   const id = editId.value || uuid();
-  const users = loadUsers();
-  const idx = users.findIndex(x=>x.id===id);
+  const idx = currentUsers.findIndex(x=>x.id===id);
 
   const record = {
     id,
@@ -1183,21 +1267,21 @@ userForm.addEventListener("submit",(e)=>{
     name:  uname.value.trim(),
     role:  urole.value,
     allowed: getPermSelections(),
-    password: (idx>=0 ? users[idx].password : ""),
-    lastLogin: idx>=0 ? users[idx].lastLogin : null
+    password: (idx>=0 ? currentUsers[idx].password : ""),
+    lastLogin: idx>=0 ? currentUsers[idx].lastLogin : null
   };
 
   // Check for duplicate email
-  const emailExists = users.some(u => u.email.toLowerCase() === record.email && u.id !== id);
+  const emailExists = currentUsers.some(u => u.email.toLowerCase() === record.email && u.id !== id);
   if(emailExists){
     showNotification("A user with this email already exists.", "error");
     return;
   }
 
   // Protect: never allow system with zero admins
-  const isChangingRoleFromAdmin = (idx>=0 && users[idx].role==="admin" && record.role!=="admin");
+  const isChangingRoleFromAdmin = (idx>=0 && currentUsers[idx].role==="admin" && record.role!=="admin");
   if(isChangingRoleFromAdmin){
-    const adminCount = users.filter(u=>u.role==="admin").length;
+    const adminCount = currentUsers.filter(u=>u.role==="admin").length;
     if(adminCount<=1){
       showNotification("You cannot remove the last Admin.", "error");
       return;
@@ -1212,32 +1296,29 @@ userForm.addEventListener("submit",(e)=>{
   const action = idx>=0 ? 'updated' : 'created';
   
   if(idx>=0){
-    users[idx] = record;
+    currentUsers[idx] = record;
     formMsg.textContent = "User updated.";
     showNotification("User updated successfully");
     logAudit('User updated', { email: record.email, role: record.role });
   }else{
-    users.push(record);
+    currentUsers.push(record);
     formMsg.textContent = `User created. Temp password: ${record.password}`;
     showNotification("User created successfully");
     logAudit('User created', { email: record.email, role: record.role });
   }
-  saveUsers(users);
   renderUsers();
   clearUserForm(false);
   updateStats();
 
   // if editing yourself, refresh tiles immediately
-  const session = getSession();
-  if(session && session.id === id) renderTiles(session);
+  if(currentSession && currentSession.id === id) renderTiles(currentSession);
 });
 
 /* Edit/Delete/Password handlers */
 userTableBody.addEventListener("click",(e)=>{
   const btn = e.target.closest("button"); if(!btn) return;
   const id = btn.dataset.id; const act = btn.dataset.act;
-  const users = loadUsers();
-  const u = users.find(x=>x.id===id); if(!u) return;
+  const u = currentUsers.find(x=>x.id===id); if(!u) return;
 
   if(act==="edit"){
     editId.value = u.id;
@@ -1253,7 +1334,6 @@ userTableBody.addEventListener("click",(e)=>{
     const p = prompt(`Set new password for ${u.email}:`, "");
     if(p && p.trim()){
       u.password = p.trim(); 
-      saveUsers(users); 
       renderUsers(); 
       showNotification("Password updated successfully");
       logAudit('Password changed', { email: u.email });
@@ -1261,22 +1341,21 @@ userTableBody.addEventListener("click",(e)=>{
   }
   if(act==="del"){
     // prevent deleting last admin
-    if(u.role==="admin" && users.filter(x=>x.role==="admin").length<=1){
+    if(u.role==="admin" && currentUsers.filter(x=>x.role==="admin").length<=1){
       showNotification("You cannot delete the last Admin.", "error");
       return;
     }
     if(!confirm("Delete this user?")) return;
-    const filtered = users.filter(x=>x.id!==id);
-    saveUsers(filtered); 
+    const filtered = currentUsers.filter(x=>x.id!==id);
+    currentUsers = filtered;
     renderUsers();
     updateStats();
     showNotification("User deleted successfully");
     logAudit('User deleted', { email: u.email });
     
     // if you deleted yourself -> logout
-    const session = getSession();
-    if(session && session.id===id){ 
-      clearSession(); 
+    if(currentSession && currentSession.id===id){ 
+      currentSession = null; 
       showLogin(); 
     }
   }
@@ -1293,13 +1372,12 @@ function clearUserForm(clearMessage){
 
 /* ===================== Admin: Module URLs ===================== */
 function buildModuleUrlInputs(){
-  const mods = loadModules();
   const wrap = document.createElement("div");
   wrap.style.display = "grid";
   wrap.style.gridTemplateColumns = "1fr 1fr";
   wrap.style.gap = "12px";
   for(let i=1;i<=MODULE_COUNT;i++){
-    const m = mods.find(x=>x.id===i) || {id:i, title:`Module ${i}`, url:""};
+    const m = currentModules.find(x=>x.id===i) || {id:i, title:`Module ${i}`, url:""};
     const box = document.createElement("div");
     box.className = "card";
     box.style.padding = "12px";
@@ -1329,8 +1407,7 @@ moduleForm.addEventListener("submit",(e)=>{
     if(!modsMap.has(id)) modsMap.set(id, {id, title:`Module ${id}`, url:""});
     modsMap.get(id)[field] = el.value.trim();
   }
-  const list = Array.from(modsMap.values());
-  saveModules(list);
+  currentModules = Array.from(modsMap.values());
   buildModuleTiles();
   buildPermToggles();
   buildModuleUrlInputs();
@@ -1343,11 +1420,10 @@ moduleForm.addEventListener("submit",(e)=>{
 
 // Test all URLs
 testAllUrls.addEventListener("click", async () => {
-  const modules = loadModules();
   let validCount = 0;
   let testedCount = 0;
   
-  for (const mod of modules) {
+  for (const mod of currentModules) {
     if (mod.url) {
       testedCount++;
       try {
@@ -1365,7 +1441,6 @@ testAllUrls.addEventListener("click", async () => {
 
 /* ===================== Audit Log ===================== */
 function renderAuditLog() {
-  const auditLog = loadAuditLog();
   const searchTerm = auditSearch.value.toLowerCase();
   
   auditTableBody.innerHTML = "";
@@ -1391,7 +1466,6 @@ function renderAuditLog() {
 auditSearch.addEventListener("input", renderAuditLog);
 
 exportAudit.addEventListener("click", () => {
-  const auditLog = loadAuditLog();
   const csv = auditLog.map(log => 
     `"${log.timestamp}","${log.user}","${log.action}","${JSON.stringify(log.details).replace(/"/g, '""')}"`
   ).join('\n');
@@ -1412,7 +1486,7 @@ exportAudit.addEventListener("click", () => {
 
 clearAudit.addEventListener("click", () => {
   if (confirm("Are you sure you want to clear all audit logs? This action cannot be undone.")) {
-    saveAuditLog([]);
+    auditLog = [];
     renderAuditLog();
     showNotification("Audit logs cleared");
     logAudit('Audit logs cleared');
@@ -1431,6 +1505,10 @@ function genTempPass(){
 
 function escapeHtml(str=""){ 
   return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); 
+}
+
+function uuid(){ 
+  return "id_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 </script>
 </body>
